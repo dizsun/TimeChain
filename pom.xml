@@ -33,7 +33,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.dizsun.Main</mainClass>
+                            <mainClass>com.dizsun.timechain.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -64,7 +64,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.dizsun.Main</mainClass>
+                            <mainClass>com.dizsun.timechain.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
