@@ -1,4 +1,4 @@
-package com.dizsun.timechain.util;
+package com.dizsun.timechain.interfaces;
 
 import com.dizsun.timechain.component.Peer;
 

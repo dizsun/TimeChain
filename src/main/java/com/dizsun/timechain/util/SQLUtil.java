@@ -28,7 +28,6 @@ public class SQLUtil {
 ////            rSet.close();//关闭数据集
 //            connection.close();//关闭数据库连接
 //        } catch (Exception e) {
-//            // TODO Auto-generated catch block
 //            e.printStackTrace();
 //        }
 //

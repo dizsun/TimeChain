@@ -1,6 +1,6 @@
 package com.dizsun.timechain.service;
 
-import com.dizsun.timechain.util.Config;
+import com.dizsun.timechain.constant.Config;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -13,7 +13,7 @@ public class NTPService extends Thread {
     @Override
     public void run() {
         try {
-            serverSocket = new ServerSocket(Config.NTPPORT);
+            serverSocket = new ServerSocket(Config.getInstance().getNtpListenPort());
             while(true){
                 try{
                     Socket inSocket = serverSocket.accept();
@@ -33,10 +33,10 @@ public class NTPService extends Thread {
         }
     }
 
-    private class NTPRequestHandler implements Runnable {
+    private static class NTPRequestHandler implements Runnable {
         private Socket mClientSocket;
 
-        public NTPRequestHandler(Socket clientSocket) {
+        NTPRequestHandler(Socket clientSocket) {
             this.mClientSocket = clientSocket;
         }
 

@@ -1,20 +1,19 @@
 package com.dizsun.timechain.util;
 
+import com.dizsun.timechain.constant.Config;
+
 import java.io.DataInputStream;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class DateUtil {
-    Date date;
-    SimpleDateFormat sdf;
-    String time;
-    boolean state;
-    private String host;
+    private Date date;
+    private SimpleDateFormat sdf;
+    private String time;
     private static DateUtil dateUtil;
 
-    private DateUtil() {
-        host= Config.TCIP;
+    private DateUtil(){
     }
 
     public static DateUtil newDataUtil(){
@@ -27,19 +26,20 @@ public class DateUtil {
     public int getCurrentMinute(){
         sdf = new SimpleDateFormat("mm");
         date=new Date();
-        return Integer.valueOf(sdf.format(date));
+        return Integer.parseInt(sdf.format(date));
     }
 
     public int getCurrentSecond(){
         sdf = new SimpleDateFormat("ss");
         date=new Date();
-        return Integer.valueOf(sdf.format(date));
+        return Integer.parseInt(sdf.format(date));
     }
 
     public String getTimeFromRC(){
         time="-1";
         try {
-            Socket socket=new Socket(host, Config.TCPORT);
+            Config config = Config.getInstance();
+            Socket socket=new Socket(config.getTimeCenterIp(), config.getTimeCenterListenPort());
             DataInputStream dis = new DataInputStream(socket.getInputStream());
             time=""+dis.readLong();
             socket.close();
@@ -50,11 +50,4 @@ public class DateUtil {
         return time;
     }
 
-    public String getHost() {
-        return host;
-    }
-
-    public void setHost(String host) {
-        this.host = host;
-    }
 }

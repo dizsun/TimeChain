@@ -5,29 +5,52 @@ import java.io.Serializable;
 /**
  * 用于在不同peer间传递消息的类(bean)
  */
-public class Message implements Serializable{
-    private int    type;
+public class Message implements Serializable {
+    private Integer type;
     private String data;
+    private String sourceIp;
+    private Long messageId;
 
     public Message() {
     }
 
-    public Message(int type) {
+    public Message(Integer type, String sourceIp, Long messageId) {
         this.type = type;
+        this.sourceIp = sourceIp;
+        this.messageId = messageId;
     }
 
-    public Message(int type, String data) {
+    public Message(Integer type, String data, String sourceIp, Long messageId) {
         this.type = type;
         this.data = data;
+        this.sourceIp = sourceIp;
+        this.messageId = messageId;
     }
 
-    public int getType() {
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public Integer getType() {
         return type;
     }
 
-    public void setType(int type) {
-        this.type = type;
+    public String getSourceIp() {
+        return sourceIp;
     }
+
+    public void setSourceIp(String sourceIp) {
+        this.sourceIp = sourceIp;
+    }
+
+    public Long getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(Long messageId) {
+        this.messageId = messageId;
+    }
+
 
     public String getData() {
         return data;

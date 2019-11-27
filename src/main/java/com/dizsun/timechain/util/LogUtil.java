@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class LogUtil {
+    // TODO 修改为单利模式并将常亮外置
     public static String CONSENSUS = "consensus";
     public static String NTP = "ntp";
     public static void init(String path,String index){
@@ -23,12 +25,8 @@ public class LogUtil {
         }
         try {
             FileOutputStream out = new FileOutputStream(file, true);
-            StringBuffer sb = new StringBuffer();
-            sb.append(msg+"\n");
-            out.write(sb.toString().getBytes("utf-8"));
+            out.write((msg + "\n").getBytes(StandardCharsets.UTF_8));
             out.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

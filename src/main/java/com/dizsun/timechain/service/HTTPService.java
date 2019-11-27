@@ -18,16 +18,15 @@ import java.io.IOException;
  */
 public class HTTPService {
     private BlockService blockService;
-    private P2PService   p2pService;
     private PeerService peerService;
 
-    public HTTPService(P2PService p2pService) {
-        this.blockService = BlockService.newBlockService();
-        this.p2pService = p2pService;
-        this.peerService=PeerService.newPeerService(p2pService);
+    public HTTPService() {
+
     }
 
     public void initHTTPServer(int port) {
+        this.blockService = BlockService.getInstance();
+        this.peerService=PeerService.getInstance();
         try {
             Server server = new Server(port);
             System.out.println("listening http port on: " + port);
@@ -38,7 +37,7 @@ public class HTTPService {
 //            context.addServlet(new ServletHolder(new MineBlockServlet()), "/mineBlock");
             context.addServlet(new ServletHolder(new PeersServlet()), "/peers");
             context.addServlet(new ServletHolder(new AddPeerServlet()), "/addPeer");
-            context.addServlet(new ServletHolder(new TimeCenterServlet()), "/setTC");
+            //context.addServlet(new ServletHolder(new TimeCenterServlet()), "/setTC");
 
             server.start();
             server.join();
@@ -82,39 +81,19 @@ public class HTTPService {
         }
     }
 
-    //TODO:这里为了测试方便直接将每次交易数据生成一个区块并广播,之后要把其改为接收交易数据,当交易量达到一定数目后再生成区块
-//    private class MineBlockServlet extends HttpServlet {
+//    private class TimeCenterServlet extends HttpServlet{
 //        @Override
 //        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//            this.doPost(req, resp);
+//            this.doPost(req,resp);
 //        }
 //
 //        @Override
 //        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 //            resp.setCharacterEncoding("UTF-8");
-//            String data = req.getParameter("data");
-//            Block newBlock = blockService.generateNextBlock(data);
-//            blockService.addBlock(newBlock);
-//            peerService.broadcast(p2pService.responseLatestMsg());
-//            String s = JSON.toJSONString(newBlock);
-//            System.out.println("block added: " + s);
-//            resp.getWriter().print(s);
+//            String host = req.getParameter("host");
+//            DateUtil dateUtil=DateUtil.newDataUtil();
+//            dateUtil.setHost(host);
 //        }
 //    }
-
-    private class TimeCenterServlet extends HttpServlet{
-        @Override
-        protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            this.doPost(req,resp);
-        }
-
-        @Override
-        protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            resp.setCharacterEncoding("UTF-8");
-            String host = req.getParameter("host");
-            DateUtil dateUtil=DateUtil.newDataUtil();
-            dateUtil.setHost(host);
-        }
-    }
 }
 

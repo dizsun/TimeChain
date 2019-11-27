@@ -1,7 +1,7 @@
-package com.dizsun.timechain.block;
+package com.dizsun.timechain.constant;
 
 import com.dizsun.timechain.util.DateUtil;
-import com.dizsun.timechain.util.ISubscriber;
+import com.dizsun.timechain.interfaces.ISubscriber;
 
 import java.util.ArrayList;
 import java.util.Timer;

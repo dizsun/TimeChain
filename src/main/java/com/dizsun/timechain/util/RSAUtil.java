@@ -23,13 +23,23 @@ public class RSAUtil {
      * RSA最大解密密文大小
      */
     private static final int MAX_DECRYPT_BLOCK = 128;
-    private static RSAUtil rsaUtil = null;
     private String publicKeyBase64;
     //private String privateKeyBase64;
     private Key publicKey;
     private Key privateKey;
 
     private RSAUtil() {
+    }
+
+    private static class Holder{
+        private static final RSAUtil rsaUtil=new RSAUtil();
+    }
+
+    public static RSAUtil getInstance() {
+        return Holder.rsaUtil;
+    }
+
+    public void init(){
         try {
             /** RSA算法要求有一个可信任的随机数源 */
             SecureRandom secureRandom = new SecureRandom();
@@ -58,13 +68,6 @@ public class RSAUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static RSAUtil getInstance() {
-        if (rsaUtil == null) {
-            rsaUtil = new RSAUtil();
-        }
-        return rsaUtil;
     }
 
     public String getPublicKeyBase64() {

@@ -1,13 +1,12 @@
 package com.dizsun.timechain;
 
-import com.dizsun.timechain.block.Broadcaster;
+import com.dizsun.timechain.constant.Broadcaster;
+import com.dizsun.timechain.constant.Config;
 import com.dizsun.timechain.service.*;
 import com.dizsun.timechain.util.*;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,23 +14,26 @@ public class Main {
     private static String Drivder = "org.sqlite.JDBC";
     private static String path = "/info/";
 
-        public static void main(String[] args) {
-
+    public static void main(String[] args) {
+        //TODO 读取输入的参数进行判定，如果有输入参数则配置config按照输入参数设置，否则直接获取
         if (args != null && args.length == 3) {
             try {
                 String index = args[2];
-                LogUtil.init(path,index);
-                String mainHost=getMainHost();
+                LogUtil.init(path, index);
+                String mainHost = getMainHost();
+                Config config = Config.getInstance();
+                config.init();
+
 
                 NTPService ntpService = new NTPService();
                 ntpService.start();
                 Broadcaster broadcaster = new Broadcaster();
                 int httpPort = Integer.valueOf(args[0]);
                 int p2pPort = Integer.valueOf(args[1]);
-                P2PService p2pService = new P2PService();
+                P2PService p2pService = P2PService.getInstance();
                 broadcaster.subscribe(p2pService);
                 p2pService.initP2PServer(p2pPort);
-                HTTPService httpService = new HTTPService(p2pService);
+                HTTPService httpService = new HTTPService();
                 broadcaster.broadcast();
                 new Timer().schedule(new TimerTask() {
                     @Override
@@ -46,7 +48,9 @@ public class Main {
         } else {
             System.out.println("usage: java -jar blockchainTest.jar 9000 6001 254");
         }
+
     }
+
     public static String getMainHost() {
         String res = "0.0.0.0";
         try {

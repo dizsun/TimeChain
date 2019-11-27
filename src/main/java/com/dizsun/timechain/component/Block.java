@@ -1,6 +1,8 @@
 package com.dizsun.timechain.component;
 
-public class Block {
+import java.io.Serializable;
+
+public class Block implements Serializable {
     private int index;
     private String previousHash;
     private long timestamp;
