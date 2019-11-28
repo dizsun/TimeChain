@@ -10,12 +10,14 @@ import com.dizsun.timechain.util.RSAUtil;
 import org.java_websocket.WebSocket;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MessageHelper {
     private BlockService blockService;
     private PeerService peerService;
     private RSAUtil rsaUtil;
     private Config config;
+    private ConcurrentHashMap<String, Long> filterMap;
 
     private static class Holder {
         private static final MessageHelper messageHelper = new MessageHelper();
@@ -33,6 +35,7 @@ public class MessageHelper {
         peerService = PeerService.getInstance();
         rsaUtil = RSAUtil.getInstance();
         config = Config.getInstance();
+        filterMap = new ConcurrentHashMap<>();
     }
 
     public String queryAllMsg() {
@@ -80,15 +83,15 @@ public class MessageHelper {
 
     public void handleBlock(WebSocket ws, String message) {
         Block receivedBlock = JSON.parseObject(message, Block.class);
-        R.getBlockReadLock().lock();
+//        R.getBlockReadLock().lock();
         Block latestBlock = blockService.getLatestBlock();
         if (receivedBlock.getIndex() <= latestBlock.getIndex()) return;
-        R.getBlockReadLock().unlock();
+//        R.getBlockReadLock().unlock();
 
         if (latestBlock.getIndex() + 1 == receivedBlock.getIndex()) {
-            R.getBlockWriteLock().lock();
+//            R.getBlockWriteLock().lock();
             blockService.addBlock(receivedBlock);
-            R.getBlockWriteLock().unlock();
+//            R.getBlockWriteLock().unlock();
         } else {
             peerService.write(ws, queryAllMsg());
         }
@@ -117,5 +120,17 @@ public class MessageHelper {
         for (String peer : peers) {
             peerService.connectToPeer(peer);
         }
+    }
+
+    public boolean filter(Message message) {
+        String sourceIp = message.getSourceIp();
+        if (sourceIp.equals(config.getLocalHost())) {
+            return false;
+        }
+        if (filterMap.containsKey(sourceIp) && message.getMessageId() <= filterMap.get(sourceIp)) {
+            return false;
+        }
+        filterMap.put(sourceIp, message.getMessageId());
+        return true;
     }
 }

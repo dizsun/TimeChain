@@ -93,7 +93,7 @@ public class PeerService implements ICheckDelay {
 
     public void broadcast(String msg) {
         peers.forEach(v -> {
-            write(v.getWebSocket(),msg);
+            write(v.getWebSocket(), msg);
         });
     }
 
@@ -213,13 +213,13 @@ public class PeerService implements ICheckDelay {
         peers.sort(new Comparator<Peer>() {
             @Override
             public int compare(Peer o1, Peer o2) {
-                return o2.getStability()-o1.getStability();
+                return o2.getStability() - o1.getStability();
             }
         });
-        // TODO 修改算法，进行归一化
-        int min=peers.get(peers.size()-1).getStability();
-        for (Peer peer:peers){
-            peer.setStability(peer.getStability()-min);
+        if (peers.get(0).getStability() >= (Integer.MAX_VALUE >>> 2)) {
+            for (Peer peer : peers) {
+                peer.setStability(peer.getStability() / 2);
+            }
         }
     }
 

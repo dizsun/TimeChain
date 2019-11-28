@@ -147,8 +147,8 @@ public class P2PService implements ISubscriber {
                         if (stabilityValue == 1) {
                             peerService.updateSI(webSocket, 1);
                         } else {
-                            peerService.updateSI(webSocket, stabilityValue / 2);
-                            stabilityValue /= 2;
+                            peerService.updateSI(webSocket, stabilityValue - 2);
+                            stabilityValue -= 2;
                         }
                         acks.add(tempACK);
 //                      System.out.println("接收到的ACK数:" + acks.size() + ",是否满足写虚区块条件:" + (acks.size() >= 2 * N));
@@ -173,7 +173,9 @@ public class P2PService implements ISubscriber {
                         case Negotiation:
                         case WaitingBlock:
                         case WaitingNegotiation:
-                            // TODO 实现路由转发
+                            if(messageHelper.filter(message)){
+                                peerService.broadcast(s);
+                            }
                             R.getBlockWriteLock().lock();
                             stopWriteBlock();
                             messageHelper.handleBlock(webSocket, message.getData());

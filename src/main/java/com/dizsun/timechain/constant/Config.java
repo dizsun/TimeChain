@@ -5,54 +5,133 @@ import java.util.Properties;
 
 public class Config {
     private Properties properties;
-    //TODO 将所有配置设置私有属性，可以读取也可以直接设置，读取时先从属性值找，没有时再读取配置文件，配置文件也没有就是用默认值
+    private String localHost;
+    private String timeCenterIp;
+    private int ntpListenPort = -1;
+    private int timeCenterListenPort = -1;
+    private int httpPort = -1;
+    private int p2pPort = -1;
+    private int index=-1;
+    private String mainNode;
+
+    public void setLocalHost(String localHost) {
+        this.localHost = localHost;
+    }
+
+    public void setTimeCenterIp(String timeCenterIp) {
+        this.timeCenterIp = timeCenterIp;
+    }
+
+    public void setNtpListenPort(int ntpListenPort) {
+        this.ntpListenPort = ntpListenPort;
+    }
+
+    public void setTimeCenterListenPort(int timeCenterListenPort) {
+        this.timeCenterListenPort = timeCenterListenPort;
+    }
+
+    public void setHttpPort(int httpPort) {
+        this.httpPort = httpPort;
+    }
+
+    public void setP2pPort(int p2pPort) {
+        this.p2pPort = p2pPort;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public void setMainNode(String mainNode) {
+        this.mainNode = mainNode;
+    }
 
     public String getLocalHost() {
-        String local_host = properties.getProperty("local_host");
-        if(local_host==null){
-            return R.DEFAULT_LOCAL_HOST;
+        if (localHost == null) {
+            String local_host = properties.getProperty("local_host");
+            if (local_host == null) {
+                localHost = R.DEFAULT_LOCAL_HOST;
+            }
+            localHost = local_host;
         }
-        return local_host;
+        return localHost;
     }
 
     public String getTimeCenterIp() {
-        String time_center_ip = properties.getProperty("time_center_ip");
-        if(time_center_ip==null){
-            return R.DEFAULT_TIME_CENTER_IP;
+        if (timeCenterIp == null) {
+            String time_center_ip = properties.getProperty("time_center_ip");
+            if (time_center_ip == null) {
+                timeCenterIp = R.DEFAULT_TIME_CENTER_IP;
+            }
+            timeCenterIp = time_center_ip;
         }
-        return time_center_ip;
+        return timeCenterIp;
     }
 
     public int getNtpListenPort() {
-        try {
-            return Integer.parseInt(properties.getProperty("ntp_listen_port"));
-        }catch (NumberFormatException e){
-            return R.DEFAULT_NTP_LISTEN_PORT;
+        if (ntpListenPort == -1) {
+            try {
+                ntpListenPort = Integer.parseInt(properties.getProperty("ntp_listen_port"));
+            } catch (NumberFormatException e) {
+                ntpListenPort = R.DEFAULT_NTP_LISTEN_PORT;
+            }
         }
+        return ntpListenPort;
     }
 
-    public int getTimeCenterListenPort(){
-        try {
-            return Integer.parseInt(properties.getProperty("time_center_listen_port"));
-        }catch (NumberFormatException e){
-            return R.DEFAULT_TIME_CENTER_LISTEN_PORT;
+    public int getTimeCenterListenPort() {
+        if (timeCenterListenPort == -1) {
+            try {
+                timeCenterListenPort = Integer.parseInt(properties.getProperty("time_center_listen_port"));
+            } catch (NumberFormatException e) {
+                timeCenterListenPort = R.DEFAULT_TIME_CENTER_LISTEN_PORT;
+            }
         }
+        return timeCenterListenPort;
     }
 
-    public int getDefaultHttpPort(){
-        try {
-            return Integer.parseInt(properties.getProperty("default_http_port"));
-        }catch (NumberFormatException e){
-            return R.DEFAULT_HTTP_PORT;
+    public int getHttpPort() {
+        if (httpPort == -1) {
+            try {
+                httpPort = Integer.parseInt(properties.getProperty("default_http_port"));
+            } catch (NumberFormatException e) {
+                httpPort = R.DEFAULT_HTTP_PORT;
+            }
         }
+        return httpPort;
     }
 
-    public int getDefaultP2pPort(){
-        try {
-            return Integer.parseInt(properties.getProperty("default_p2p_port"));
-        }catch (NumberFormatException e){
-            return R.DEFAULT_P2P_PORT;
+    public int getP2pPort() {
+        if (p2pPort == -1) {
+            try {
+                p2pPort = Integer.parseInt(properties.getProperty("default_p2p_port"));
+            } catch (NumberFormatException e) {
+                p2pPort = R.DEFAULT_P2P_PORT;
+            }
         }
+        return p2pPort;
+    }
+
+    public int getIndex() {
+        if (index == -1) {
+            try {
+                index = Integer.parseInt(properties.getProperty("index"));
+            } catch (NumberFormatException e) {
+                index = R.INDEX;
+            }
+        }
+        return index;
+    }
+
+    public String getMainNode() {
+        if (mainNode == null) {
+            String time_center_ip = properties.getProperty("main_node");
+            if (time_center_ip == null) {
+                mainNode = R.DEFAULT_MAIN_NODE;
+            }
+            mainNode = time_center_ip;
+        }
+        return mainNode;
     }
 
     private Config() {

@@ -1,7 +1,8 @@
 package com.dizsun.timechain.util;
 
+import com.dizsun.timechain.constant.R;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -10,13 +11,15 @@ public class LogUtil {
     // TODO 修改为单利模式并将常亮外置
     public static String CONSENSUS = "consensus";
     public static String NTP = "ntp";
-    public static void init(String path,String index){
-        LogUtil.CONSENSUS = path+"consensus_" + index + ".txt";
-        LogUtil.NTP = path+"ntp_" + index + ".txt";
+
+    public static void init(int index) {
+        LogUtil.CONSENSUS = R.LOG_FILE_PATH + "consensus_" + index + ".txt";
+        LogUtil.NTP = R.LOG_FILE_PATH + "ntp_" + index + ".txt";
     }
-    public static void writeLog(String msg, String fileName){
+
+    public static void writeLog(String msg, String fileName) {
         File file = new File(fileName);
-        if(!file.exists()) {
+        if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {

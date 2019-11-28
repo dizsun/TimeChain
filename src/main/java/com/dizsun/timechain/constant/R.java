@@ -30,6 +30,12 @@ public class R {
     public static final int DEFAULT_P2P_PORT = 6001;
     // 默认http监听端口
     public static final int DEFAULT_HTTP_PORT = 9000;
+    // 默认节点索引
+    public static final int INDEX = 0;
+    // 默认主节点
+    public static final String DEFAULT_MAIN_NODE = "127.0.0.1";
+
+    public static final String LOG_FILE_PATH = "/info/";
 
 
     private static AtomicLong messageId = new AtomicLong(0);
