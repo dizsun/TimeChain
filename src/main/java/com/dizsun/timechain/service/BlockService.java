@@ -68,18 +68,19 @@ public class BlockService {
     }
 
     /**
-     * 生成新区块
+     * 生成新区块并添加到链上
      *
      * @param blockData
      * @return
      */
-    public Block generateNextBlock(String blockData, int VN) {
+    public void generateNextBlock(String blockData) {
         Block previousBlock = this.getLatestBlock();
         int nextIndex = previousBlock.getIndex() + 1;
         long nextTimestamp = System.currentTimeMillis();
         String nextHash = calculateHash(nextIndex, previousBlock.getHash(), nextTimestamp, blockData);
         //int proof=createProofOfWork(previousBlock.getProof(),previousBlock.getHash());
-        return new Block(nextIndex, previousBlock.getHash(), nextTimestamp, blockData, nextHash, VN);
+        Block newBlock = new Block(nextIndex, previousBlock.getHash(), nextTimestamp, blockData, nextHash,R.getViewNumber());
+        blockChain.add(newBlock);
     }
 
     /**
@@ -90,6 +91,10 @@ public class BlockService {
         return blockChain.get(blockChain.size() - 1);
     }
 
+    /**
+     * 向链上添加新区块
+     * @param newBlock
+     */
     public void addBlock(Block newBlock) {
         if (isValidNewBlock(newBlock, getLatestBlock())) {
 //            sqlUtil.addBlock(newBlock);

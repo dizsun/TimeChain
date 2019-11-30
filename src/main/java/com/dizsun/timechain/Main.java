@@ -4,14 +4,16 @@ import com.dizsun.timechain.constant.Broadcaster;
 import com.dizsun.timechain.constant.Config;
 import com.dizsun.timechain.service.*;
 import com.dizsun.timechain.util.*;
+import org.apache.log4j.Logger;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class Main {
     private static String Drivder = "org.sqlite.JDBC";
+    static Logger logger = Logger.getLogger(Main.class);
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
         Config config = Config.getInstance();
         config.init();
         if (args == null || args.length == 0) {
@@ -31,7 +33,7 @@ public class Main {
             config.setTimeCenterIp(args[6]);
             config.setMainNode(args[7]);
         } else {
-            System.err.println("传入参数错误，应传入参数为：\n" +
+            logger.error("传入参数错误，应传入参数为：\n" +
                     "  1.无参数\n" +
                     "  2.index,localHost,timeCenterIp,mainNode\n" +
                     "  3.httpPort,p2pPort,timeCenterPort,ntpPort,index,localHost,timeCenterIp,mainNode");
@@ -50,12 +52,14 @@ public class Main {
             new Timer().schedule(new TimerTask() {
                 @Override
                 public void run() {
+                    if (config.getLocalHost().equals(config.getMainNode())) return;
                     p2pService.connect(config.getMainNode());
                 }
             }, 5000);
             httpService.initHTTPServer(config.getHttpPort());
         } catch (Exception e) {
-            System.out.println("startup is error:" + e.getMessage());
+            logger.error("startup is error:" + e.getMessage());
+
         }
 
     }

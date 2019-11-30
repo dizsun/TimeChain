@@ -4,6 +4,7 @@ import com.dizsun.timechain.component.Peer;
 import com.dizsun.timechain.constant.Config;
 import com.dizsun.timechain.interfaces.ICheckDelay;
 import com.dizsun.timechain.util.LogUtil;
+import org.apache.log4j.Logger;
 import org.java_websocket.WebSocket;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -28,6 +29,7 @@ public class PeerService implements ICheckDelay {
     private ConcurrentHashMap<String, Peer> peersMap;
     private ArrayList<Peer> peers;
     private MessageHelper messageHelper;
+    private Logger logger = Logger.getLogger(PeerService.class);
 
 
     private PeerService() {
@@ -60,7 +62,7 @@ public class PeerService implements ICheckDelay {
     }
 
     public void removePeer(WebSocket webSocket) {
-        if (webSocket != null) {
+        if (webSocket != null && webSocket.getRemoteSocketAddress() != null) {
             String hostString = webSocket.getRemoteSocketAddress().getHostString();
             Peer peer = peersMap.get(hostString);
             if (peer != null) {
@@ -98,7 +100,7 @@ public class PeerService implements ICheckDelay {
     }
 
     public boolean contains(String host) {
-        return peersMap.contains(host);
+        return peersMap.containsKey(host);
     }
 
     public boolean contains(WebSocket webSocket) {
@@ -123,7 +125,7 @@ public class PeerService implements ICheckDelay {
                     if (!addPeer(this)) {
                         this.close();
                     }
-                    write(this, messageHelper.queryChainLengthMsg());
+                    write(this, messageHelper.queryLatestBlock());
                     write(this, messageHelper.queryAllPeers());
                 }
 
@@ -134,19 +136,19 @@ public class PeerService implements ICheckDelay {
 
                 @Override
                 public void onClose(int i, String s, boolean b) {
-                    System.out.println("[PeerService][connectToPeer]connection failed");
+                    logger.warn("connection failed");
                     removePeer(this);
                 }
 
                 @Override
                 public void onError(Exception e) {
-                    System.out.println("[PeerService][connectToPeer]connection failed");
+                    logger.warn("connection failed");
                     removePeer(this);
                 }
             };
             socket.connect();
         } catch (URISyntaxException e) {
-            System.out.println("[PeerService][connectToPeer]p2p connect is error:" + e.getMessage());
+            logger.warn("p2p connect is error:" + e.getMessage());
         }
 
     }
@@ -166,7 +168,11 @@ public class PeerService implements ICheckDelay {
      * @return
      */
     public Object[] getPeerArray() {
-        return peers.toArray();
+        String[] ps = new String[peers.size()];
+        for (int i = 0; i < peers.size(); i++) {
+            ps[i] = peers.get(i).getIp();
+        }
+        return ps;
     }
 
     /**
@@ -176,21 +182,16 @@ public class PeerService implements ICheckDelay {
      * @return
      */
     public boolean isIP(String addr) {
-        if (addr.length() < 7 || addr.length() > 15 || "".equals(addr)) {
+        if (addr == null || addr.isEmpty() || addr.length() < 7 || addr.length() > 15) {
             return false;
         }
         /**
          * 判断IP格式和范围
          */
         String rexp = "([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}";
-
         Pattern pat = Pattern.compile(rexp);
-
         Matcher mat = pat.matcher(addr);
-
-        boolean ipAddress = mat.find();
-
-        return ipAddress;
+        return mat.find();
     }
 
     /**
@@ -210,12 +211,8 @@ public class PeerService implements ICheckDelay {
      * 对SI表进行规整化，即所有SI值减去最小值并排序
      */
     public void regularizeSI() {
-        peers.sort(new Comparator<Peer>() {
-            @Override
-            public int compare(Peer o1, Peer o2) {
-                return o2.getStability() - o1.getStability();
-            }
-        });
+        if (peers.size() == 0) return;
+        peers.sort((o1, o2) -> o2.getStability() - o1.getStability());
         if (peers.get(0).getStability() >= (Integer.MAX_VALUE >>> 2)) {
             for (Peer peer : peers) {
                 peer.setStability(peer.getStability() / 2);

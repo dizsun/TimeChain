@@ -39,7 +39,7 @@ public class R {
 
 
     private static AtomicLong messageId = new AtomicLong(0);
-    private static AtomicInteger viewNumber = new AtomicInteger(0);
+    private static AtomicInteger viewNumber = new AtomicInteger(1);
     private static ReentrantReadWriteLock blockChainLock = new ReentrantReadWriteLock();    // 读写锁
 
 
@@ -47,7 +47,7 @@ public class R {
         return messageId.get();
     }
 
-    public static Long getIncrementMessageId() {
+    public static Long getAndIncrementMessageId() {
         return messageId.incrementAndGet() % Long.MAX_VALUE;
     }
 
@@ -55,8 +55,8 @@ public class R {
         return viewNumber.get();
     }
 
-    public static Integer getIncrementViewNumber() {
-        return viewNumber.incrementAndGet() % Integer.MAX_VALUE;
+    public static Integer getAndIncrementViewNumber() {
+        return viewNumber.getAndIncrement() % Integer.MAX_VALUE;
     }
 
     public static void setViewNumber(Integer vn) {

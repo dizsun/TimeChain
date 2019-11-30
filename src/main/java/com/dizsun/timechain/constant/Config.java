@@ -11,7 +11,7 @@ public class Config {
     private int timeCenterListenPort = -1;
     private int httpPort = -1;
     private int p2pPort = -1;
-    private int index=-1;
+    private int index = -1;
     private String mainNode;
 
     public void setLocalHost(String localHost) {
@@ -141,8 +141,10 @@ public class Config {
      * 从config.properties文件中载入所有配置
      */
     public void init() {
-        String filePath = System.getProperty("user.dir") + System.getProperty("file.separator") + "config.properties";
+//        String filePath = System.getProperty("user.dir") + System.getProperty("file.separator") + "config.properties";
+        String filePath = "config.properties";
         properties = new Properties();
+
         InputStream in = null;
         try {
             File file = new File(filePath);
@@ -154,6 +156,8 @@ public class Config {
             if (in != null) {
                 properties.load(in);
             }
+
+            modifyLog4j(getIndex());
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -176,5 +180,28 @@ public class Config {
         return Holder.config;
     }
 
-
+    private void modifyLog4j(int index) {
+        Properties p = new Properties();
+        InputStream inputStream = Config.class.getClassLoader().getResourceAsStream("log4j.properties");
+        try {
+            p.load(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        p.setProperty("log4j.appender.DIZSUN.File", "/info/" + index + ".log");
+        FileOutputStream oFile = null;
+        try {
+            oFile = new FileOutputStream("log4j.properties");
+            //将Properties中的属性列表（键和元素对）写入输出流
+            p.store(oFile, "");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                oFile.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

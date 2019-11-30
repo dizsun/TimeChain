@@ -3,6 +3,7 @@ package com.dizsun.timechain.service;
 
 import com.alibaba.fastjson.JSON;
 import com.dizsun.timechain.util.DateUtil;
+import org.apache.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -14,9 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * Created by sunysen on 2017/7/6.
+ * Created by dizsun on 2017/7/6.
  */
 public class HTTPService {
+    private Logger logger = Logger.getLogger(HTTPService.class);
     private BlockService blockService;
     private PeerService peerService;
 
@@ -29,7 +31,7 @@ public class HTTPService {
         this.peerService=PeerService.getInstance();
         try {
             Server server = new Server(port);
-            System.out.println("listening http port on: " + port);
+            logger.info("listening http port on: " + port);
             ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
             context.setContextPath("/");
             server.setHandler(context);
@@ -42,7 +44,7 @@ public class HTTPService {
             server.start();
             server.join();
         } catch (Exception e) {
-            System.out.println("init http server is error:" + e.getMessage());
+            logger.error("init http server is error:" + e.getMessage());
         }
     }
 

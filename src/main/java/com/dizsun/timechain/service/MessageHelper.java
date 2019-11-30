@@ -38,38 +38,38 @@ public class MessageHelper {
         filterMap = new ConcurrentHashMap<>();
     }
 
-    public String queryAllMsg() {
-        return JSON.toJSONString(new Message(R.QUERY_ALL_BLOCKS, JSON.toJSONString(blockService.getBlockChain()), config.getLocalHost(), R.getIncrementMessageId()));
+    public String queryAllBlock() {
+        return JSON.toJSONString(new Message(R.QUERY_ALL_BLOCKS, JSON.toJSONString(blockService.getBlockChain()), config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
 
-    public String queryChainLengthMsg() {
-        return JSON.toJSONString(new Message(R.QUERY_LATEST_BLOCK, config.getLocalHost(), R.getIncrementMessageId()));
+    public String queryLatestBlock() {
+        return JSON.toJSONString(new Message(R.QUERY_LATEST_BLOCK, config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
     public String queryAllPeers() {
-        return JSON.toJSONString(new Message(R.QUERY_ALL_PEERS, JSON.toJSONString(peerService.getPeerArray()), config.getLocalHost(), R.getIncrementMessageId()));
+        return JSON.toJSONString(new Message(R.QUERY_ALL_PEERS, JSON.toJSONString(peerService.getPeerArray()), config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
     public String requestNegotiation() {
-        return JSON.toJSONString(new Message(R.REQUEST_NEGOTIATION, config.getLocalHost(), R.getIncrementMessageId()));
+        return JSON.toJSONString(new Message(R.REQUEST_NEGOTIATION, config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
-    public String responseChainMsg() {
-        return JSON.toJSONString(new Message(R.RESPONSE_BLOCK_CHAIN, JSON.toJSONString(blockService.getBlockChain()), config.getLocalHost(), R.getIncrementMessageId()));
+    public String responseAllBlocks() {
+        return JSON.toJSONString(new Message(R.RESPONSE_BLOCK_CHAIN, JSON.toJSONString(blockService.getBlockChain()), config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
-    public String responseLatestMsg() {
-        Block[] blocks = {blockService.getLatestBlock()};
-        return JSON.toJSONString(new Message(R.RESPONSE_BLOCK_CHAIN, JSON.toJSONString(blocks), config.getLocalHost(), R.getIncrementMessageId()));
+    public String responseLatestBlock() {
+        Block block = blockService.getLatestBlock();
+        return JSON.toJSONString(new Message(R.RESPONSE_BLOCK, JSON.toJSONString(block), config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
-    public String responseBlock() {
-        return JSON.toJSONString(new Message(R.RESPONSE_BLOCK, JSON.toJSONString(blockService.getBlockChain()), config.getLocalHost(), R.getIncrementMessageId()));
-    }
+//    public String responseBlock() {
+//        return JSON.toJSONString(new Message(R.RESPONSE_BLOCK, JSON.toJSONString(blockService.getBlockChain()), config.getLocalHost(), R.getAndIncrementMessageId()));
+//    }
 
     public String responseAllPeers() {
-        return JSON.toJSONString(new Message(R.RESPONSE_ALL_PEERS, JSON.toJSONString(peerService.getPeerArray()), config.getLocalHost(), R.getIncrementMessageId()));
+        return JSON.toJSONString(new Message(R.RESPONSE_ALL_PEERS, JSON.toJSONString(peerService.getPeerArray()), config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
     public String responseACK() {
@@ -78,7 +78,7 @@ public class MessageHelper {
         ack.setVN(vn);
         ack.setPublicKey(rsaUtil.getPublicKeyBase64());
         ack.setSign(rsaUtil.encrypt(rsaUtil.getPublicKeyBase64() + vn));
-        return JSON.toJSONString(new Message(R.RESPONSE_ACK, JSON.toJSONString(ack), config.getLocalHost(), R.getIncrementMessageId()));
+        return JSON.toJSONString(new Message(R.RESPONSE_ACK, JSON.toJSONString(ack), config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
     public void handleBlock(WebSocket ws, String message) {
@@ -93,7 +93,7 @@ public class MessageHelper {
             blockService.addBlock(receivedBlock);
 //            R.getBlockWriteLock().unlock();
         } else {
-            peerService.write(ws, queryAllMsg());
+            peerService.write(ws, queryAllBlock());
         }
     }
 

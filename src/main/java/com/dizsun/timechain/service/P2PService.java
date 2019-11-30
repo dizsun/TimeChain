@@ -9,6 +9,7 @@ import com.dizsun.timechain.util.RSAUtil;
 import com.dizsun.timechain.interfaces.ISubscriber;
 import com.dizsun.timechain.constant.R;
 import com.dizsun.timechain.constant.ViewState;
+import org.apache.log4j.Logger;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -26,6 +27,7 @@ public class P2PService implements ISubscriber {
     private RSAUtil rsaUtil;
     private PeerService peerService;
     private MessageHelper messageHelper;
+    private Logger logger = Logger.getLogger(P2PService.class);
 
     private long startTime = 0;
     private long endTime = 0;
@@ -62,7 +64,7 @@ public class P2PService implements ISubscriber {
         messageHelper.init();
         final WebSocketServer socket = new WebSocketServer(new InetSocketAddress(port)) {
             public void onOpen(WebSocket webSocket, ClientHandshake clientHandshake) {
-                peerService.write(webSocket, messageHelper.queryChainLengthMsg());
+                peerService.write(webSocket, messageHelper.queryLatestBlock());
                 String host = webSocket.getRemoteSocketAddress().getHostString();
                 if (peerService.contains(host)) {
                     peerService.removePeer(host);
@@ -71,7 +73,7 @@ public class P2PService implements ISubscriber {
             }
 
             public void onClose(WebSocket webSocket, int i, String s, boolean b) {
-                System.out.println("[P2PService][initP2PServcer]connection failed to peer:" + webSocket.getRemoteSocketAddress());
+                logger.warn("connection failed to peer:" + webSocket.getRemoteSocketAddress());
                 peerService.removePeer(webSocket);
             }
 
@@ -81,7 +83,7 @@ public class P2PService implements ISubscriber {
             }
 
             public void onError(WebSocket webSocket, Exception e) {
-                System.out.println("[P2PService][initP2PServcer]connection failed to peer:" + webSocket.getRemoteSocketAddress());
+                logger.warn("connection failed to peer:" + webSocket.getRemoteSocketAddress());
                 peerService.removePeer(webSocket);
             }
 
@@ -90,7 +92,7 @@ public class P2PService implements ISubscriber {
             }
         };
         socket.start();
-        System.out.println("[P2PService][initP2PServcer]listening websocket p2p port on: " + port);
+        logger.info("listening websocket p2p port on: " + port);
     }
 
     /**
@@ -102,47 +104,51 @@ public class P2PService implements ISubscriber {
     private void handleMessage(WebSocket webSocket, String s) {
         try {
             Message message = JSON.parseObject(s, Message.class);
-//            System.out.println("Received message" + JSON.toJSONString(message));
+            if (message.getViewNumber() < R.getViewNumber()) {
+                webSocket.send(messageHelper.responseAllBlocks());
+                return;
+            }else if (message.getViewNumber()>R.getViewNumber()){
+                R.setViewNumber(message.getViewNumber());
+                webSocket.send(messageHelper.queryAllBlock());
+                return;
+            }
             switch (message.getType()) {
                 case R.QUERY_LATEST_BLOCK:
-//                    System.out.println("对方请求最新block...");
-                    peerService.write(webSocket, messageHelper.responseLatestMsg());
+                    logger.info("a request for newest block");
+                    peerService.write(webSocket, messageHelper.responseLatestBlock());
                     break;
                 case R.QUERY_ALL_BLOCKS:
-//                    System.out.println("对方请求所有block...");
-                    peerService.write(webSocket, messageHelper.responseChainMsg());
-//                    synchronized (blockLock) {
-//                        handleBlockChainResponse(webSocket, message.getData());
-//                    }
+                    logger.info("a request for all blocks");
+                    peerService.write(webSocket, messageHelper.responseAllBlocks());
                     break;
                 case R.QUERY_ALL_PEERS:
-//                    System.out.println("对方请求所有peer...");
+                    logger.info("a request for newest peers list");
                     peerService.write(webSocket, messageHelper.responseAllPeers());
                     messageHelper.handlePeersResponse(message.getData());
                     break;
                 case R.RESPONSE_BLOCK_CHAIN:
-//                    System.out.println("收到blocks...");
+                    logger.info("received blocks list");
                     messageHelper.handleBlockChain(webSocket, message.getData());
                     break;
                 case R.RESPONSE_ALL_PEERS:
-//                    System.out.println("收到所有peer...");
+                    logger.info("received peers list");
                     messageHelper.handlePeersResponse(message.getData());
                     break;
                 case R.REQUEST_NEGOTIATION:
-                    System.out.println("[P2PService][handleMessage]receive negotiation request...");
+                    logger.info("received a request for negotiation");
                     N = (peerService.length() + 1) / 3;
-//                    System.out.println("N的大小:" + N);
+                    logger.info("the total number of node is " + N);
                     if (viewState == ViewState.WaitingNegotiation) {
                         startTime = System.nanoTime();
-//                        System.out.println("广播ACK");
+                        logger.info("broad ack");
                         peerService.broadcast(messageHelper.responseACK());
                         viewState = ViewState.WaitingACK;
                     }
                     break;
                 case R.RESPONSE_ACK:
-//                    System.out.println("收到ACK...");
+                    logger.info("received an ack");
                     ACK tempACK = new ACK(message.getData());
-//                    System.out.println("ACK正确性:" + checkACK(tempACK));
+                    logger.info("checking the ack correctness:" + checkACK(tempACK));
                     if (viewState == ViewState.WaitingACK && checkACK(tempACK)) {
                         if (stabilityValue == 1) {
                             peerService.updateSI(webSocket, 1);
@@ -151,15 +157,16 @@ public class P2PService implements ISubscriber {
                             stabilityValue -= 2;
                         }
                         acks.add(tempACK);
-//                      System.out.println("接收到的ACK数:" + acks.size() + ",是否满足写虚区块条件:" + (acks.size() >= 2 * N));
+                        logger.info("the number of received ack" + acks.size());
+                        logger.info("Check if the conditions for writing a block are met：" + (acks.size() >= 2 * N));
                         if (acks.size() >= 2 * N) {
                             R.getBlockWriteLock().lock();
                             writeBlock();
-                            peerService.broadcast(messageHelper.responseBlock());
+                            peerService.broadcast(messageHelper.responseLatestBlock());
                             viewState = ViewState.Running;
                             R.getBlockWriteLock().unlock();
                             endTime = System.nanoTime() - startTime;
-                            System.out.println("[P2PService][handleMessage]Consensus duration:" + endTime / 1000000000.0 + "s");
+                            logger.info("Consensus duration:" + endTime / 1000000000.0 + "s");
                             LogUtil.writeLog("" + endTime, LogUtil.CONSENSUS);
                         }
                     }
@@ -173,7 +180,7 @@ public class P2PService implements ISubscriber {
                         case Negotiation:
                         case WaitingBlock:
                         case WaitingNegotiation:
-                            if(messageHelper.filter(message)){
+                            if (messageHelper.filter(message)) {
                                 peerService.broadcast(s);
                             }
                             R.getBlockWriteLock().lock();
@@ -182,7 +189,7 @@ public class P2PService implements ISubscriber {
                             viewState = ViewState.Running;
                             R.getBlockWriteLock().unlock();
                             endTime = System.nanoTime() - startTime;
-                            System.out.println("[P2PService][handleMessage]Consensus duration:" + endTime / 1000000000.0 + "s");
+                            logger.info("Consensus duration:" + endTime / 1000000000.0 + "s");
                             LogUtil.writeLog("" + endTime, LogUtil.CONSENSUS);
                             break;
 
@@ -190,7 +197,7 @@ public class P2PService implements ISubscriber {
                     break;
             }
         } catch (Exception e) {
-            System.out.println("[P2PService][handleMessage]hanle message is error:" + e.getMessage());
+            logger.info("An error occurred while processing the message:" + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -212,8 +219,8 @@ public class P2PService implements ISubscriber {
      */
     private void writeBlock() {
         viewState = ViewState.WritingBlock;
-        blockService.addBlock(blockService.generateNextBlock(blockService.getJSONData(acks), R.getIncrementViewNumber()));
-        System.out.println("[P2PService]区块");
+        blockService.generateNextBlock(blockService.getJSONData(acks));
+        logger.info("new block generated successfully");
     }
 
     public void handleMsgThread(WebSocket webSocket, String msg) {
@@ -222,7 +229,6 @@ public class P2PService implements ISubscriber {
     }
 
     private boolean checkACK(ACK ack) {
-//        System.out.println("ack检测一:" + ack.getVN() + "," + this.VN);
         if (ack.getVN() != R.getViewNumber()) {
             return false;
         }
@@ -234,7 +240,7 @@ public class P2PService implements ISubscriber {
 
     @Override
     public void doPerHour00() {
-//        System.out.println("进入00,此时VN=" + VN);
+        logger.info("enter time 00,the view number is " + R.getViewNumber());
         switch (this.viewState) {
             case WaitingNegotiation:
                 startTime = System.nanoTime();
@@ -249,26 +255,26 @@ public class P2PService implements ISubscriber {
 
     @Override
     public void doPerHour45() {
-        System.out.println("[P2PService]进入45,此时VN=" + R.getViewNumber());
+        logger.info("enter time 45,the view number is " + R.getViewNumber());
         peerService.broadcast(messageHelper.queryAllPeers());
     }
 
     @Override
     public void doPerHour59() {
         N = (peerService.length() + 1) / 3;
-        System.out.println("[P2PService]进入59,此时VN=" + R.getViewNumber() + ",N=" + N);
+        logger.info("enter time 00,the view number is " + R.getViewNumber() + " and the number of node is " + N);
         this.viewState = ViewState.WaitingNegotiation;
     }
 
     @Override
     public void doPerHour01() {
-        System.out.println("[P2PService]进入01,此时VN=" + R.getViewNumber());
+        logger.info("enter time 01,the view number is " + R.getViewNumber());
         // 此处加锁是因为handleMessage中的RESPONSE_ACK中需要判定acks，因此和这里会相互影响
         R.getBlockWriteLock().lock();
         this.viewState = ViewState.Running;
         acks.clear();
         R.getBlockWriteLock().unlock();
-        R.getIncrementViewNumber();
+        R.getAndIncrementViewNumber();
         startTime = 0;
         endTime = 0;
         stabilityValue = 128;

@@ -1,5 +1,7 @@
 package com.dizsun.timechain.component;
 
+import com.dizsun.timechain.constant.R;
+
 import java.io.Serializable;
 
 /**
@@ -10,6 +12,7 @@ public class Message implements Serializable {
     private String data;
     private String sourceIp;
     private Long messageId;
+    private int viewNumber;
 
     public Message() {
     }
@@ -18,6 +21,7 @@ public class Message implements Serializable {
         this.type = type;
         this.sourceIp = sourceIp;
         this.messageId = messageId;
+        this.viewNumber= R.getViewNumber();
     }
 
     public Message(Integer type, String data, String sourceIp, Long messageId) {
@@ -25,6 +29,7 @@ public class Message implements Serializable {
         this.data = data;
         this.sourceIp = sourceIp;
         this.messageId = messageId;
+        this.viewNumber= R.getViewNumber();
     }
 
     public void setType(Integer type) {
@@ -58,5 +63,9 @@ public class Message implements Serializable {
 
     public void setData(String data) {
         this.data = data;
+    }
+
+    public int getViewNumber() {
+        return viewNumber;
     }
 }
