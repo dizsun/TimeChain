@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
+//TODO 将websocket换成netty的tcp连接，并且不再持有长连接，而是每次使用时再建立
 public class Main {
     private static String Drivder = "org.sqlite.JDBC";
     static Logger logger = Logger.getLogger(Main.class);
@@ -16,6 +16,7 @@ public class Main {
     public static void main(String[] args) {
         Config config = Config.getInstance();
         config.init();
+
         if (args == null || args.length == 0) {
             //使用配置文件或者默认值
         } else if (args.length == 4) {
@@ -23,6 +24,7 @@ public class Main {
             config.setLocalHost(args[1]);
             config.setTimeCenterIp(args[2]);
             config.setMainNode(args[3]);
+            logger.info("config inited");
         } else if (args.length == 8) {
             config.setHttpPort(Integer.parseInt(args[0]));
             config.setP2pPort(Integer.parseInt(args[1]));
@@ -39,6 +41,14 @@ public class Main {
                     "  3.httpPort,p2pPort,timeCenterPort,ntpPort,index,localHost,timeCenterIp,mainNode");
             System.exit(0);
         }
+        logger.info(config.getLocalHost());
+        logger.info(config.getMainNode());
+        logger.info(config.getTimeCenterIp());
+        logger.info(config.getIndex());
+        logger.info(config.getNtpListenPort());
+        logger.info(config.getHttpPort());
+        logger.info(config.getP2pPort());
+        logger.info(config.getTimeCenterListenPort());
         try {
             LogUtil.init(config.getIndex());
             NTPService ntpService = new NTPService();

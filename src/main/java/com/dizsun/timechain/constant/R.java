@@ -1,14 +1,19 @@
 package com.dizsun.timechain.constant;
 
+import com.dizsun.timechain.util.LogUtil;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class R {
+    /**
+     * 各节点之间传输的消息类型
+     */
     public static final int QUERY_LATEST_BLOCK = 0;
     public static final int QUERY_ALL_BLOCKS = 1;
-    public static final int RESPONSE_BLOCK_CHAIN = 2;
+    public static final int RESPONSE_ALL_BLOCKS = 2;
     public static final int QUERY_ALL_PEERS = 3;
     public static final int RESPONSE_ALL_PEERS = 4;
     public static final int REQUEST_NEGOTIATION = 5;
@@ -31,7 +36,7 @@ public class R {
     // 默认http监听端口
     public static final int DEFAULT_HTTP_PORT = 9000;
     // 默认节点索引
-    public static final int INDEX = 0;
+    public static final int INDEX = 100;
     // 默认主节点
     public static final String DEFAULT_MAIN_NODE = "127.0.0.1";
 
@@ -41,6 +46,7 @@ public class R {
     private static AtomicLong messageId = new AtomicLong(0);
     private static AtomicInteger viewNumber = new AtomicInteger(1);
     private static ReentrantReadWriteLock blockChainLock = new ReentrantReadWriteLock();    // 读写锁
+    private static long startTime = 0;
 
 
     public static Long getMessageId() {
@@ -69,5 +75,16 @@ public class R {
 
     public static Lock getBlockWriteLock() {
         return blockChainLock.writeLock();
+    }
+
+    public static void beginConsensus() {
+        startTime = System.nanoTime();
+    }
+
+    public static void endConsensus() {
+        if (startTime == 0) return;
+        long duration = System.nanoTime() - startTime;
+        LogUtil.writeLog("" + duration, LogUtil.CONSENSUS);
+        startTime = 0;
     }
 }

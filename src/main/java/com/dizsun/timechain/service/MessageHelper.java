@@ -56,7 +56,7 @@ public class MessageHelper {
     }
 
     public String responseAllBlocks() {
-        return JSON.toJSONString(new Message(R.RESPONSE_BLOCK_CHAIN, JSON.toJSONString(blockService.getBlockChain()), config.getLocalHost(), R.getAndIncrementMessageId()));
+        return JSON.toJSONString(new Message(R.RESPONSE_ALL_BLOCKS, JSON.toJSONString(blockService.getBlockChain()), config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
     public String responseLatestBlock() {

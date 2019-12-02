@@ -81,6 +81,7 @@ public class BlockService {
         //int proof=createProofOfWork(previousBlock.getProof(),previousBlock.getHash());
         Block newBlock = new Block(nextIndex, previousBlock.getHash(), nextTimestamp, blockData, nextHash,R.getViewNumber());
         blockChain.add(newBlock);
+        R.endConsensus();
     }
 
     /**
@@ -100,6 +101,7 @@ public class BlockService {
 //            sqlUtil.addBlock(newBlock);
             blockChain.add(newBlock);
             R.setViewNumber(newBlock.getVN());
+            R.endConsensus();
         }
     }
 

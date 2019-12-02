@@ -97,6 +97,7 @@ public class PeerService implements ICheckDelay {
         peers.forEach(v -> {
             write(v.getWebSocket(), msg);
         });
+        logger.info(" broadcast complete!!!");
     }
 
     public boolean contains(String host) {

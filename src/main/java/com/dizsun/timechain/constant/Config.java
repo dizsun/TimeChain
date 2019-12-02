@@ -49,10 +49,11 @@ public class Config {
     public String getLocalHost() {
         if (localHost == null) {
             String local_host = properties.getProperty("local_host");
-            if (local_host == null) {
+            if (local_host == null||local_host.isEmpty()) {
                 localHost = R.DEFAULT_LOCAL_HOST;
+            }else {
+                localHost = local_host;
             }
-            localHost = local_host;
         }
         return localHost;
     }
@@ -60,10 +61,11 @@ public class Config {
     public String getTimeCenterIp() {
         if (timeCenterIp == null) {
             String time_center_ip = properties.getProperty("time_center_ip");
-            if (time_center_ip == null) {
+            if (time_center_ip == null||time_center_ip.isEmpty()) {
                 timeCenterIp = R.DEFAULT_TIME_CENTER_IP;
+            }else {
+                timeCenterIp = time_center_ip;
             }
-            timeCenterIp = time_center_ip;
         }
         return timeCenterIp;
     }
@@ -125,11 +127,12 @@ public class Config {
 
     public String getMainNode() {
         if (mainNode == null) {
-            String time_center_ip = properties.getProperty("main_node");
-            if (time_center_ip == null) {
+            String main_node = properties.getProperty("main_node");
+            if (main_node == null||main_node.isEmpty()) {
                 mainNode = R.DEFAULT_MAIN_NODE;
+            }else {
+                mainNode = main_node;
             }
-            mainNode = time_center_ip;
         }
         return mainNode;
     }

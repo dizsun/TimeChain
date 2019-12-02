@@ -4,6 +4,7 @@ package com.dizsun.timechain.service;
 import com.alibaba.fastjson.JSON;
 import com.dizsun.timechain.component.ACK;
 import com.dizsun.timechain.component.Message;
+import com.dizsun.timechain.constant.Config;
 import com.dizsun.timechain.util.LogUtil;
 import com.dizsun.timechain.util.RSAUtil;
 import com.dizsun.timechain.interfaces.ISubscriber;
@@ -28,9 +29,10 @@ public class P2PService implements ISubscriber {
     private PeerService peerService;
     private MessageHelper messageHelper;
     private Logger logger = Logger.getLogger(P2PService.class);
+    private Config config = Config.getInstance();
 
-    private long startTime = 0;
-    private long endTime = 0;
+//    private long startTime = 0;
+//    private long endTime = 0;
     //view number
 //    private int VN;
     //节点数3N+0,1,2
@@ -104,14 +106,18 @@ public class P2PService implements ISubscriber {
     private void handleMessage(WebSocket webSocket, String s) {
         try {
             Message message = JSON.parseObject(s, Message.class);
-            if (message.getViewNumber() < R.getViewNumber()) {
-                webSocket.send(messageHelper.responseAllBlocks());
-                return;
-            }else if (message.getViewNumber()>R.getViewNumber()){
-                R.setViewNumber(message.getViewNumber());
-                webSocket.send(messageHelper.queryAllBlock());
-                return;
-            }
+            if (message.getSourceIp().equals(config.getLocalHost())) return;
+//            if (message.getViewNumber() < R.getViewNumber()) {
+//                webSocket.send(messageHelper.responseAllBlocks());
+//                logger.info("the message view number is less than us:" + message.getViewNumber() + "<" + R.getViewNumber());
+//                logger.info("type:"+message.getType());
+//                return;
+//            } else if (message.getViewNumber() > R.getViewNumber() && message.getType() != R.RESPONSE_ALL_BLOCKS) {
+//                R.setViewNumber(message.getViewNumber());
+//                webSocket.send(messageHelper.queryAllBlock());
+//                logger.info("the message view number is more than us:" + message.getViewNumber() + ">" + R.getViewNumber());
+//                return;
+//            }
             switch (message.getType()) {
                 case R.QUERY_LATEST_BLOCK:
                     logger.info("a request for newest block");
@@ -126,7 +132,7 @@ public class P2PService implements ISubscriber {
                     peerService.write(webSocket, messageHelper.responseAllPeers());
                     messageHelper.handlePeersResponse(message.getData());
                     break;
-                case R.RESPONSE_BLOCK_CHAIN:
+                case R.RESPONSE_ALL_BLOCKS:
                     logger.info("received blocks list");
                     messageHelper.handleBlockChain(webSocket, message.getData());
                     break;
@@ -137,9 +143,9 @@ public class P2PService implements ISubscriber {
                 case R.REQUEST_NEGOTIATION:
                     logger.info("received a request for negotiation");
                     N = (peerService.length() + 1) / 3;
-                    logger.info("the total number of node is " + N);
+                    logger.info("the N is " + N);
                     if (viewState == ViewState.WaitingNegotiation) {
-                        startTime = System.nanoTime();
+                        R.beginConsensus();
                         logger.info("broad ack");
                         peerService.broadcast(messageHelper.responseACK());
                         viewState = ViewState.WaitingACK;
@@ -165,9 +171,6 @@ public class P2PService implements ISubscriber {
                             peerService.broadcast(messageHelper.responseLatestBlock());
                             viewState = ViewState.Running;
                             R.getBlockWriteLock().unlock();
-                            endTime = System.nanoTime() - startTime;
-                            logger.info("Consensus duration:" + endTime / 1000000000.0 + "s");
-                            LogUtil.writeLog("" + endTime, LogUtil.CONSENSUS);
                         }
                     }
                     break;
@@ -188,9 +191,6 @@ public class P2PService implements ISubscriber {
                             messageHelper.handleBlock(webSocket, message.getData());
                             viewState = ViewState.Running;
                             R.getBlockWriteLock().unlock();
-                            endTime = System.nanoTime() - startTime;
-                            logger.info("Consensus duration:" + endTime / 1000000000.0 + "s");
-                            LogUtil.writeLog("" + endTime, LogUtil.CONSENSUS);
                             break;
 
                     }
@@ -243,7 +243,7 @@ public class P2PService implements ISubscriber {
         logger.info("enter time 00,the view number is " + R.getViewNumber());
         switch (this.viewState) {
             case WaitingNegotiation:
-                startTime = System.nanoTime();
+                R.beginConsensus();
                 N = (peerService.length() + 1) / 3;
                 this.viewState = ViewState.WaitingACK;
                 peerService.broadcast(messageHelper.requestNegotiation());
@@ -262,7 +262,7 @@ public class P2PService implements ISubscriber {
     @Override
     public void doPerHour59() {
         N = (peerService.length() + 1) / 3;
-        logger.info("enter time 00,the view number is " + R.getViewNumber() + " and the number of node is " + N);
+        logger.info("enter time 59,the view number is " + R.getViewNumber() + " and the number of node is " + peerService.length());
         this.viewState = ViewState.WaitingNegotiation;
     }
 
@@ -275,8 +275,6 @@ public class P2PService implements ISubscriber {
         acks.clear();
         R.getBlockWriteLock().unlock();
         R.getAndIncrementViewNumber();
-        startTime = 0;
-        endTime = 0;
         stabilityValue = 128;
         peerService.updateDelay();
         peerService.regularizeSI();
