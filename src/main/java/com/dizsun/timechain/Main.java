@@ -14,9 +14,12 @@ public class Main {
     static Logger logger = Logger.getLogger(Main.class);
 
     public static void main(String[] args) {
+        //初始化参数
         Config config = Config.getInstance();
         config.init();
-
+        /**
+         *  默认为从配置文件或者R中寻找参数,从命令行传入的参数则可以覆盖原有的数据
+         */
         if (args == null || args.length == 0) {
             //使用配置文件或者默认值
         } else if (args.length == 4) {
@@ -41,14 +44,16 @@ public class Main {
                     "  3.httpPort,p2pPort,timeCenterPort,ntpPort,index,localHost,timeCenterIp,mainNode");
             System.exit(0);
         }
-        logger.info(config.getLocalHost());
-        logger.info(config.getMainNode());
-        logger.info(config.getTimeCenterIp());
-        logger.info(config.getIndex());
-        logger.info(config.getNtpListenPort());
-        logger.info(config.getHttpPort());
-        logger.info(config.getP2pPort());
-        logger.info(config.getTimeCenterListenPort());
+//        打印输出参数
+//        logger.info(config.getLocalHost());
+//        logger.info(config.getMainNode());
+//        logger.info(config.getTimeCenterIp());
+//        logger.info(config.getIndex());
+//        logger.info(config.getNtpListenPort());
+//        logger.info(config.getHttpPort());
+//        logger.info(config.getP2pPort());
+//        logger.info(config.getTimeCenterListenPort());
+        //初始化并启动各个组件
         try {
             LogUtil.init(config.getIndex());
             NTPService ntpService = new NTPService();

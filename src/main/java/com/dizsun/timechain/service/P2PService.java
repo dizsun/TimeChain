@@ -21,7 +21,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
+/**
+ * 包含了和其他节点之间通信的协议和对消息处理的业务逻辑
+ */
 public class P2PService implements ISubscriber {
     private BlockService blockService;
     private ExecutorService pool;   //线程池
@@ -141,6 +143,9 @@ public class P2PService implements ISubscriber {
                     messageHelper.handlePeersResponse(message.getData());
                     break;
                 case R.REQUEST_NEGOTIATION:
+                    /**
+                     * 若对方同意开始公示,则广播ACK
+                     */
                     logger.info("received a request for negotiation");
                     N = (peerService.length() + 1) / 3;
                     logger.info("the N is " + N);
@@ -152,6 +157,9 @@ public class P2PService implements ISubscriber {
                     }
                     break;
                 case R.RESPONSE_ACK:
+                    /**
+                     * 收到对方的ACK后进行判断是否满足写区块条件
+                     */
                     logger.info("received an ack");
                     ACK tempACK = new ACK(message.getData());
                     logger.info("checking the ack correctness:" + checkACK(tempACK));
@@ -175,6 +183,9 @@ public class P2PService implements ISubscriber {
                     }
                     break;
                 case R.RESPONSE_BLOCK:
+                    /**
+                     * 收到对方新区块
+                     */
                     switch (viewState) {
                         case Running:
                             break;
@@ -223,11 +234,21 @@ public class P2PService implements ISubscriber {
         logger.info("new block generated successfully");
     }
 
+    /**
+     * 处理消息的方法,开启处理线程
+     * @param webSocket
+     * @param msg
+     */
     public void handleMsgThread(WebSocket webSocket, String msg) {
         Thread thread = new HandleMsgThread(webSocket, msg);
         pool.execute(thread);
     }
 
+    /**
+     * 检查ACK是否合法
+     * @param ack
+     * @return
+     */
     private boolean checkACK(ACK ack) {
         if (ack.getVN() != R.getViewNumber()) {
             return false;
@@ -238,6 +259,9 @@ public class P2PService implements ISubscriber {
         return true;
     }
 
+    /**
+     * 当进入时间点tc时,开始共识
+     */
     @Override
     public void doPerHour00() {
         logger.info("enter time 00,the view number is " + R.getViewNumber());
@@ -253,12 +277,18 @@ public class P2PService implements ISubscriber {
         }
     }
 
+    /**
+     * running期间进行同步节点列表
+     */
     @Override
     public void doPerHour45() {
         logger.info("enter time 45,the view number is " + R.getViewNumber());
         peerService.broadcast(messageHelper.queryAllPeers());
     }
 
+    /**
+     * 进入时间点tp时,准备共识
+     */
     @Override
     public void doPerHour59() {
         N = (peerService.length() + 1) / 3;
@@ -266,6 +296,9 @@ public class P2PService implements ISubscriber {
         this.viewState = ViewState.WaitingNegotiation;
     }
 
+    /**
+     * 进入时间点te时,结束共识
+     */
     @Override
     public void doPerHour01() {
         logger.info("enter time 01,the view number is " + R.getViewNumber());

@@ -2,6 +2,9 @@ package com.dizsun.timechain.component;
 
 import java.io.Serializable;
 
+/**
+ * 区块组件类
+ */
 public class Block implements Serializable {
     private int index;
     private String previousHash;

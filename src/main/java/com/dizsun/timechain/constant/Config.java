@@ -3,6 +3,9 @@ package com.dizsun.timechain.constant;
 import java.io.*;
 import java.util.Properties;
 
+/**
+ * 定义了各种初始化参数的获取方法
+ */
 public class Config {
     private Properties properties;
     private String localHost;
@@ -46,6 +49,10 @@ public class Config {
         this.mainNode = mainNode;
     }
 
+    /**
+     * 以localHost为例,如果没有在命令行传输localHost参数,则先从配置文件寻找,若没有则从R文件中查找
+     * @return
+     */
     public String getLocalHost() {
         if (localHost == null) {
             String local_host = properties.getProperty("local_host");

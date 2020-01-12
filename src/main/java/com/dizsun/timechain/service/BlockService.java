@@ -63,6 +63,10 @@ public class BlockService {
         return CryptoUtil.getSHA256(builder.toString());
     }
 
+    /**
+     * 获取创世区块
+     * @return
+     */
     private Block getFirstBlock() {
         return new Block(1, "0", 0, "Hello Block", "1db6aa3c81dc4b05a49eaed6feba99ed4ef07aa418d10bfbbc12af68cab6fb2a", 0);
     }
@@ -178,7 +182,11 @@ public class BlockService {
     }
 
 
-
+    /**
+     * 将所有ACK转换成json
+     * @param acks
+     * @return
+     */
     public String getJSONData(List<ACK> acks) {
         return JSON.toJSONString(acks);
     }

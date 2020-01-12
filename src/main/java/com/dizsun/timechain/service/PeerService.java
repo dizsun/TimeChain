@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 
 /**
  * 管理peer节点的连接和移除及通信
+ * 包装了节点间传输消息的具体方法和对节点的操作
  */
 public class PeerService implements ICheckDelay {
     private String localHost;
@@ -49,6 +50,11 @@ public class PeerService implements ICheckDelay {
         peers = new ArrayList<>();
     }
 
+    /**
+     * 添加节点
+     * @param webSocket
+     * @return
+     */
     public boolean addPeer(WebSocket webSocket) {
         String host = webSocket.getRemoteSocketAddress().getHostString();
         localHost = webSocket.getLocalSocketAddress().getHostString();
@@ -61,6 +67,10 @@ public class PeerService implements ICheckDelay {
         return true;
     }
 
+    /**
+     * 移除节点
+     * @param webSocket
+     */
     public void removePeer(WebSocket webSocket) {
         if (webSocket != null && webSocket.getRemoteSocketAddress() != null) {
             String hostString = webSocket.getRemoteSocketAddress().getHostString();
@@ -80,6 +90,11 @@ public class PeerService implements ICheckDelay {
         }
     }
 
+    /**
+     * 向节点发送消息
+     * @param webSocket 节点连接
+     * @param msg 发送的消息
+     */
     public void write(WebSocket webSocket, String msg) {
         if (webSocket != null && webSocket.isOpen())
             webSocket.send(msg);
@@ -93,13 +108,20 @@ public class PeerService implements ICheckDelay {
         webSocket.send(msg);
     }
 
+    /**
+     * 向所有节点广播消息
+     * @param msg
+     */
     public void broadcast(String msg) {
-        peers.forEach(v -> {
-            write(v.getWebSocket(), msg);
-        });
+        peers.forEach(v -> write(v.getWebSocket(), msg));
         logger.info(" broadcast complete!!!");
     }
 
+    /**
+     * 判断节点列表是否包含改节点
+     * @param host
+     * @return
+     */
     public boolean contains(String host) {
         return peersMap.containsKey(host);
     }
@@ -109,7 +131,7 @@ public class PeerService implements ICheckDelay {
     }
 
     /**
-     * 连接peer
+     * 连接节点peer
      *
      * @param host 输入的host格式示例: 192.168.1.1 或者http://192.168.1.1:6001
      */

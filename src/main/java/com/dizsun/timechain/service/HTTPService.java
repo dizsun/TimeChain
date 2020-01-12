@@ -16,6 +16,7 @@ import java.io.IOException;
 
 /**
  * Created by dizsun on 2017/7/6.
+ * 提供http接口,包含jetty服务器
  */
 public class HTTPService {
     private Logger logger = Logger.getLogger(HTTPService.class);

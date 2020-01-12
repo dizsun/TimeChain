@@ -12,6 +12,10 @@ import org.java_websocket.WebSocket;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 帮助处理节点间传输的消息的辅助类
+ * query,request和response开头的方法是将需要传输的数据打包成json字符串格式
+ */
 public class MessageHelper {
     private BlockService blockService;
     private PeerService peerService;
@@ -81,6 +85,11 @@ public class MessageHelper {
         return JSON.toJSONString(new Message(R.RESPONSE_ACK, JSON.toJSONString(ack), config.getLocalHost(), R.getAndIncrementMessageId()));
     }
 
+    /**
+     * 处理接收到的单个区块
+     * @param ws
+     * @param message
+     */
     public void handleBlock(WebSocket ws, String message) {
         Block receivedBlock = JSON.parseObject(message, Block.class);
 //        R.getBlockReadLock().lock();
@@ -97,6 +106,11 @@ public class MessageHelper {
         }
     }
 
+    /**
+     * 处理接收到的区块链
+     * @param ws
+     * @param message
+     */
     public void handleBlockChain(WebSocket ws, String message) {
         List<Block> receivedBlocks = JSON.parseArray(message, Block.class);
         R.getBlockReadLock().lock();
@@ -122,6 +136,11 @@ public class MessageHelper {
         }
     }
 
+    /**
+     * 过滤器,过滤掉本节点发送的消息和消息id相同的重复消息
+     * @param message
+     * @return
+     */
     public boolean filter(Message message) {
         String sourceIp = message.getSourceIp();
         if (sourceIp.equals(config.getLocalHost())) {

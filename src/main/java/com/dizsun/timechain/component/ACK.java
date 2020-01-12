@@ -4,6 +4,9 @@ import com.alibaba.fastjson.JSON;
 
 import java.io.Serializable;
 
+/**
+ * ACK组件类,包括字段view number:VN,公钥:publicKey和签名sign
+ */
 public class ACK implements Serializable {
     private int VN;
     private String publicKey;

@@ -7,18 +7,21 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * 全局参数
+ */
 public class R {
     /**
      * 各节点之间传输的消息类型
      */
-    public static final int QUERY_LATEST_BLOCK = 0;
-    public static final int QUERY_ALL_BLOCKS = 1;
-    public static final int RESPONSE_ALL_BLOCKS = 2;
-    public static final int QUERY_ALL_PEERS = 3;
-    public static final int RESPONSE_ALL_PEERS = 4;
-    public static final int REQUEST_NEGOTIATION = 5;
-    public static final int RESPONSE_ACK = 6;
-    public static final int RESPONSE_BLOCK = 8;
+    public static final int QUERY_LATEST_BLOCK = 0;//查询最近区块
+    public static final int QUERY_ALL_BLOCKS = 1;//查询整个链
+    public static final int RESPONSE_ALL_BLOCKS = 2;//响应整个链
+    public static final int QUERY_ALL_PEERS = 3;//查询当前连接节点
+    public static final int RESPONSE_ALL_PEERS = 4;//响应当前连接节点
+    public static final int REQUEST_NEGOTIATION = 5;//开始共识请求
+    public static final int RESPONSE_ACK = 6;//响应ACK
+    public static final int RESPONSE_BLOCK = 8;//返回新区块
 
     /**
      * config文件中的默认值，如果无法从properties文件读取相应配置，则取此默认值

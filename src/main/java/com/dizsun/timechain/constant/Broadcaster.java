@@ -8,7 +8,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * 广播时间变化事件
+ * 广播时间变化事件,相当于计时器
  */
 public class Broadcaster {
     private Timer timer;
@@ -21,6 +21,9 @@ public class Broadcaster {
         dateUtil = DateUtil.newDataUtil();
     }
 
+    /**
+     * 这里默认5分钟一个周期,可以更改模值来改变周期
+     */
     public void broadcast() {
         timer.schedule(new TimerTask() {
             @Override
